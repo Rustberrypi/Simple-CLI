@@ -1,8 +1,12 @@
 use std::io;
 
 fn main() {
-    let event1 = make_event();
-    println!("{}", event1.name);
+    
+    let mut event_list: Vec<Event> = Vec::new();
+    let event = make_event(&mut event_list);
+    event_list.push(event);
+    println!("{}", event_list[0].name);
+    println!("{}", event_list[0].resource_3);
 }
 
 // An event has a name, day, start time, end time, and any of the three resources it needs to be using.
@@ -17,12 +21,20 @@ struct Event{
     resource_3: bool,
 }
 
-fn make_event() -> Event {
+/* When creating an event the list of current events scheduled will be passed to the function.
+   This is done to insure that if the event you are trying to create overlaps with an already existing event,
+   and wants to use the same resources as that event it will ask the user if they would like to reschedule
+   the event they are currently making or the already existing event.
+*/
+fn make_event(v: &mut Vec<Event>) -> Event {
     let mut event_name = String::new();
     let mut event_day = String::new();
     let mut event_start = String::new();
     let mut event_end = String::new();
     let mut condit = String::new();
+    let mut overlap = false;
+    let mut ov_index: u32 = 5000;
+    let mut ov_res = (false, false, false);
     let mut r1: bool = false;
     let mut r2: bool = false;
     let mut r3: bool = false;
@@ -57,7 +69,7 @@ fn make_event() -> Event {
             event_day = String::new();
         }
     }
-
+    
     println!("Please enter a start time in the 'XXXX' format. (ex: 5:24pm would be 1724)");
     loop{ 
         io::stdin()
@@ -85,20 +97,42 @@ fn make_event() -> Event {
     }
     let event_end: u32 = event_end.trim().parse().unwrap();
 
+    for i in 0..v.len(){
+        if event_day == v[i].day{
+            if event_start <= v[i].start_time && event_end > v[i].start_time{
+                overlap = true;
+                ov_index = i as u32;
+                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+            } else if event_start < v[i].end_time && event_end >= v[i].end_time{
+                overlap = true;
+                ov_index = i as u32;
+                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+            } else if event_start > v[i].start_time && event_end < v[i].end_time{
+                overlap = true;
+                ov_index = i as u32;
+                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+            } else if event_start < v[i].start_time && event_end > v[i].end_time{
+                overlap = true;
+                ov_index = i as u32;
+                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+            }
+        }
+    }
+    
     println!("Do you need to use camerea 1? (enter y or n)");
     loop{
         io::stdin().read_line(&mut condit).expect("failed to read answer");
         if condit.trim().to_lowercase() == "y"{
             r1 = true;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else if condit.trim().to_lowercase() == "n"{
             r1 = false;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else {
             println!("please enter y or n");
-            condit = "".to_string();
+            condit = String::new();
         }    
     }
 
@@ -107,15 +141,15 @@ fn make_event() -> Event {
         io::stdin().read_line(&mut condit).expect("failed to read answer");
         if condit.trim().to_lowercase() == "y"{
             r2 = true;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else if condit.trim().to_lowercase() == "n"{
             r2 = false;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else {
             println!("please enter y or n");
-            condit = "".to_string();
+            condit = String::new();
         }    
     }
     
