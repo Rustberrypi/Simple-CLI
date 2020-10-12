@@ -1,12 +1,15 @@
 use std::io;
 
 fn main() {
-    
     let mut event_list: Vec<Event> = Vec::new();
-    let event = make_event(&mut event_list);
+    // line 6 through 8 is addEvent(&mut event_list);
+    let event = make_event();
     event_list.push(event);
-    let event2 = make_event(&mut event_list);
+    overlap(&mut event_list);
+    // line 10 through 12 is addEvent(&mut event_list);
+    let event2 = make_event();
     event_list.push(event2);
+    overlap(&mut event_list);
 }
 
 // An event has a name, day, start time, end time, and any of the three resources it needs to be using.
@@ -26,17 +29,17 @@ struct Event{
    and wants to use the same resources as that event it will ask the user if they would like to reschedule
    the event they are currently making or the already existing event.
 */
-fn make_event(v: &mut Vec<Event>) -> Event {
+fn make_event() -> Event {
     let mut event_name = String::new();
     let mut event_day = String::new();
     let mut event_start = String::new();
     let mut event_end = String::new();
     let mut condit = String::new();
-    let mut overlap = false;
+    /*let mut overlap = false;
     let mut ov_index: usize = 5000;
     let mut ov_r1: bool = false;
     let mut ov_r2: bool = false;
-    let mut ov_r3: bool = false;
+    let mut ov_r3: bool = false;*/
     let mut r1: bool = false;
     let mut r2: bool = false;
     let mut r3: bool = false;
@@ -99,7 +102,7 @@ fn make_event(v: &mut Vec<Event>) -> Event {
     }
     let event_end: u32 = event_end.trim().parse().unwrap();
 
-    for i in 0..v.len(){
+    /*for i in 0..v.len(){
         if event_day == v[i].day{
             if event_start <= v[i].start_time && event_end > v[i].start_time{
                 overlap = true;
@@ -127,7 +130,7 @@ fn make_event(v: &mut Vec<Event>) -> Event {
                 ov_r3 = v[i].resource_3;
             }
         }
-    }
+    }*/
     
     println!("Do you need to use camerea 1? (enter y or n)");
     loop{
@@ -168,24 +171,18 @@ fn make_event(v: &mut Vec<Event>) -> Event {
         io::stdin().read_line(&mut condit).expect("failed to read answer");
         if condit.trim().to_lowercase() == "y"{
             r3 = true;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else if condit.trim().to_lowercase() == "n"{
             r3 = false;
-            condit = "".to_string();
+            condit = String::new();
             break;
         } else {
             println!("please enter y or n");
-            condit = "".to_string();
+            condit = String::new();
         }    
     }
-    
-    if overlap == true{
-        if ov_r1 == r1 && ov_r2 != r2 && ov_r3 != r3{
-            println!("There is an overlap during this time slot with {}.", v[ov_index].name);
-        }
-    }
-    
+
     let event = Event {
         name: event_name,
         day: event_day,
@@ -196,4 +193,97 @@ fn make_event(v: &mut Vec<Event>) -> Event {
         resource_3: r3,
     };
     return event;
+}
+
+fn overlap(v: &mut Vec<Event>){
+    let mut condit: String = String::new();
+    let mut overlap: bool = false;
+    let mut ov_r1: bool = false;
+    let mut ov_r2: bool = false;
+    let mut ov_r3: bool = false;
+    for i in 0..v.len(){
+        for j in (i+1)..v.len(){
+            loop {
+                if v[i].day == v[j].day{
+                    if v[i].start_time <= v[j].start_time && v[i].end_time > v[j].start_time{
+                        overlap = true;
+                    } else if v[i].start_time < v[j].end_time && v[i].end_time >= v[j].end_time{
+                        overlap = true;
+                    } else if v[i].start_time > v[j].start_time && v[i].end_time < v[j].end_time{
+                        overlap = true;
+                    } else if v[i].start_time < v[j].start_time && v[i].end_time > v[j].end_time{
+                        overlap = true;
+                    } else {
+                        overlap = false;
+                        break;
+                    }
+
+                    if overlap == true && v[i].resource_1 == v[j].resource_1{
+                        println!("Both {} and {} use camerea 1 at the same time.", v[i].name, v[j].name);
+                        println!("If you would like to reschedule {} enter 1.", v[i].name);
+                        println!("If you would like to reschedule {} enter 2.", v[j].name);
+                        loop{
+                            io::stdin()
+                                .read_line(&mut condit)
+                                .expect("Failed to read input.");
+                            if condit.trim() == "1"{
+                                v[i] = make_event();
+                                condit = String::new();
+                                break;
+                            } else if condit.trim() == "2"{
+                                v[j] = make_event();
+                                condit = String::new();
+                                break;
+                            } else{
+                                println!("Please enter 1 or 2");
+                                condit = String::new();
+                            }
+                        }
+                    } else if overlap == true && v[i].resource_2 == v[j].resource_2{
+                        println!("Both {} and {} use camerea 2 at the same time.", v[i].name, v[j].name);
+                        println!("If you would like to reschedule {} enter 1.", v[i].name);
+                        println!("If you would like to reschedule {} enter 2.", v[j].name);
+                        loop{
+                            io::stdin()
+                                .read_line(&mut condit)
+                                .expect("Failed to read input.");
+                            if condit.trim() == "1"{
+                                v[i] = make_event();
+                                condit = String::new();
+                                break;
+                            } else if condit.trim() == "2"{
+                                v[j] = make_event();
+                                condit = String::new();
+                                break;
+                            } else{
+                                println!("Please enter 1 or 2");
+                                condit = String::new();
+                            }
+                        }
+                    } else if overlap == true && v[i].resource_3 == v[j].resource_3{
+                        println!("Both {} and {} use the navigation system at the same time.", v[i].name, v[j].name);
+                        println!("If you would like to reschedule {} enter 1.", v[i].name);
+                        println!("If you would like to reschedule {} enter 2.", v[j].name);
+                        loop{
+                            io::stdin()
+                                .read_line(&mut condit)
+                                .expect("Failed to read input");
+                            if condit.trim() == "1"{
+                                v[i] = make_event();
+                                condit = String::new();
+                                break;
+                            } else if condit.trim() == "2"{
+                                v[j] = make_event();
+                                condit = String::new();
+                                break;
+                            } else{
+                                println!("Please enter 1 or 2");
+                                condit = String::new();
+                            }
+                        }
+                    } else {break;}
+                } else {break;}
+            }
+        }
+    }
 }
