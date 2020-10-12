@@ -5,8 +5,8 @@ fn main() {
     let mut event_list: Vec<Event> = Vec::new();
     let event = make_event(&mut event_list);
     event_list.push(event);
-    println!("{}", event_list[0].name);
-    println!("{}", event_list[0].resource_3);
+    let event2 = make_event(&mut event_list);
+    event_list.push(event2);
 }
 
 // An event has a name, day, start time, end time, and any of the three resources it needs to be using.
@@ -33,8 +33,10 @@ fn make_event(v: &mut Vec<Event>) -> Event {
     let mut event_end = String::new();
     let mut condit = String::new();
     let mut overlap = false;
-    let mut ov_index: u32 = 5000;
-    let mut ov_res = (false, false, false);
+    let mut ov_index: usize = 5000;
+    let mut ov_r1: bool = false;
+    let mut ov_r2: bool = false;
+    let mut ov_r3: bool = false;
     let mut r1: bool = false;
     let mut r2: bool = false;
     let mut r3: bool = false;
@@ -101,20 +103,28 @@ fn make_event(v: &mut Vec<Event>) -> Event {
         if event_day == v[i].day{
             if event_start <= v[i].start_time && event_end > v[i].start_time{
                 overlap = true;
-                ov_index = i as u32;
-                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+                ov_index = i;
+                ov_r1 = v[i].resource_1;
+                ov_r2 = v[i].resource_2;
+                ov_r3 = v[i].resource_3;
             } else if event_start < v[i].end_time && event_end >= v[i].end_time{
                 overlap = true;
-                ov_index = i as u32;
-                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+                ov_index = i;
+                ov_r1 = v[i].resource_1;
+                ov_r2 = v[i].resource_2;
+                ov_r3 = v[i].resource_3;
             } else if event_start > v[i].start_time && event_end < v[i].end_time{
                 overlap = true;
-                ov_index = i as u32;
-                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+                ov_index = i;
+                ov_r1 = v[i].resource_1;
+                ov_r2 = v[i].resource_2;
+                ov_r3 = v[i].resource_3;
             } else if event_start < v[i].start_time && event_end > v[i].end_time{
                 overlap = true;
-                ov_index = i as u32;
-                ov_res = (v[i].resource_1, v[i].resource_2, v[i].resource_3);
+                ov_index = i;
+                ov_r1 = v[i].resource_1;
+                ov_r2 = v[i].resource_2;
+                ov_r3 = v[i].resource_3;
             }
         }
     }
@@ -168,6 +178,12 @@ fn make_event(v: &mut Vec<Event>) -> Event {
             println!("please enter y or n");
             condit = "".to_string();
         }    
+    }
+    
+    if overlap == true{
+        if ov_r1 == r1 && ov_r2 != r2 && ov_r3 != r3{
+            println!("There is an overlap during this time slot with {}.", v[ov_index].name);
+        }
     }
     
     let event = Event {
