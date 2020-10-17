@@ -14,9 +14,6 @@ fn main() {
     add_event(&mut event_list);
     add_event(&mut event_list);
     delete_event(&mut event_list);
-    for i in 0..event_list.len(){
-        event_log(&mut event_list[i]);
-    }
     add_event(&mut event_list);
     show_schedule(&mut event_list, &mut days);
     advance_day(&mut event_list, &mut days);
@@ -24,7 +21,39 @@ fn main() {
 }
 
 fn advance_day(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
-    let mut events_completed: Vec<Event> = Vec::new();
+    //let mut events_completed: Vec<Event> = Vec::new();
+    let mut indecies: Vec<usize> = Vec::new();
+    println!("Here are the events successfully completed on {}:\n", days[0]);
+    for i in 0..events.len(){
+        if events[i].day == days[0]{
+            event_log(&mut events[i]);
+            //events.remove(i);
+            indecies.push(i);
+        }
+    }
+    for i in 0..indecies.len(){
+        events.remove(indecies[i]);
+    }
+    //println!("Here are the events successfully completed on {}:\n", days[0]);
+    /*for i in 0..events_completed.len(){
+        event_log(&mut events_completed[i]);
+    }*/
+    if days[0] == "sunday"{
+        days.push("sunday".to_string());
+    } else if days[0] == "monday"{
+        days.push("monday".to_string());
+    } else if days[0] == "tuesday"{
+        days.push("tuesday".to_string());
+    } else if days[0] == "wednesday"{
+        days.push("wednesday".to_string());
+    } else if days[0] == "thursday"{
+        days.push("thursday".to_string());
+    } else if days[0] == "friday"{
+        days.push("friday".to_string());
+    } else if days[0] == "saturday"{
+        days.push("saturday".to_string());
+    }
+    days.remove(0);
 }
 
 fn show_schedule(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
@@ -57,9 +86,11 @@ fn delete_event(mut v: &mut Vec<Event>){
             .read_line(&mut event_name)
             .expect("Failed to read event name.");
         for i in 0..v.len(){
-            if event_name.trim() == v[i].name{
-                v.remove(i);
-                deleted = true;
+            if deleted == false{
+                if event_name.trim() == v[i].name{
+                    v.remove(i);
+                    deleted = true;
+                }
             }
         }
         if deleted == true{
@@ -240,9 +271,6 @@ fn make_event() -> Event {
 fn overlap(v: &mut Vec<Event>){
     let mut condit: String = String::new();
     let mut overlap: bool = false;
-    let mut ov_r1: bool = false;
-    let mut ov_r2: bool = false;
-    let mut ov_r3: bool = false;
     for i in 0..v.len(){
         for j in (i+1)..v.len(){
             loop {
