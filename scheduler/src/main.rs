@@ -10,6 +10,7 @@ fn main() {
     days.push("thursday".to_string());
     days.push("friday".to_string());
     days.push("saturday".to_string());
+
     add_event(&mut event_list);
     add_event(&mut event_list);
     delete_event(&mut event_list);
@@ -17,7 +18,13 @@ fn main() {
         event_log(&mut event_list[i]);
     }
     add_event(&mut event_list);
-    show_schedule(&mut event_list, &mut days)
+    show_schedule(&mut event_list, &mut days);
+    advance_day(&mut event_list, &mut days);
+    show_schedule(&mut event_list, &mut days);
+}
+
+fn advance_day(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
+    let mut events_completed: Vec<Event> = Vec::new();
 }
 
 fn show_schedule(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
