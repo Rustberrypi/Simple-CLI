@@ -2,11 +2,32 @@ use std::io;
 
 fn main() {
     let mut event_list: Vec<Event> = Vec::new();
+    let mut days: Vec<String> =Vec::new();
+    days.push("sunday".to_string());
+    days.push("monday".to_string());
+    days.push("tuesday".to_string());
+    days.push("wednesday".to_string());
+    days.push("thursday".to_string());
+    days.push("friday".to_string());
+    days.push("saturday".to_string());
     add_event(&mut event_list);
     add_event(&mut event_list);
     delete_event(&mut event_list);
     for i in 0..event_list.len(){
         event_log(&mut event_list[i]);
+    }
+    add_event(&mut event_list);
+    show_schedule(&mut event_list, &mut days)
+}
+
+fn show_schedule(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
+    for i in 0..days.len(){
+        println!("\nHere are the events scheduled for {}:", days[i]);
+        for j in 0..events.len(){
+            if days[i] == events[j].day{
+                event_log(&mut events[j]);
+            }
+        }
     }
 }
 
