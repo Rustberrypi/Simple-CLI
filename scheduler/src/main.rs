@@ -2,14 +2,58 @@ use std::io;
 
 fn main() {
     let mut event_list: Vec<Event> = Vec::new();
-    // line 6 through 8 is addEvent(&mut event_list);
+    add_event(&mut event_list);
+    add_event(&mut event_list);
+    delete_event(&mut event_list);
+    for i in 0..event_list.len(){
+        event_log(&mut event_list[i]);
+    }
+}
+
+fn add_event(mut v: &mut Vec<Event>){
     let event = make_event();
-    event_list.push(event);
-    overlap(&mut event_list);
-    // line 10 through 12 is addEvent(&mut event_list);
-    let event2 = make_event();
-    event_list.push(event2);
-    overlap(&mut event_list);
+    v.push(event);
+    overlap(&mut v);
+}
+
+fn delete_event(mut v: &mut Vec<Event>){
+    let mut event_name = String::new();
+    let mut deleted: bool = false;
+    println!("Here is the list of scheduled events: \n");
+    for i in 0..v.len(){
+        event_log(&mut v[i]);
+    }
+    println!("Enter the name of the event you would like to delete");
+    loop{
+        io::stdin()
+            .read_line(&mut event_name)
+            .expect("Failed to read event name.");
+        for i in 0..v.len(){
+            if event_name.trim() == v[i].name{
+                v.remove(i);
+                deleted = true;
+            }
+        }
+        if deleted == true{
+            break;
+        }
+        else{
+            println!("The event name you entered was not found.");
+            println!("Please enter a valid event name.");
+            event_name = String::new();
+        }
+    }
+    
+}
+
+fn event_log(event : &mut Event){
+    println!("Name:               {}", event.name);
+    println!("Day:                {}", event.day);
+    println!("Start time:         {}", event.start_time);
+    println!("End time:           {}", event.end_time);
+    println!("Camera 1 in use:    {}", event.resource_1);
+    println!("Camera 2 in use:    {}", event.resource_2);
+    println!("Nav system in use:  {} \n", event.resource_3);
 }
 
 // An event has a name, day, start time, end time, and any of the three resources it needs to be using.
@@ -101,36 +145,6 @@ fn make_event() -> Event {
         } else {println!("please enter a time between 0 and 2400");}
     }
     let event_end: u32 = event_end.trim().parse().unwrap();
-
-    /*for i in 0..v.len(){
-        if event_day == v[i].day{
-            if event_start <= v[i].start_time && event_end > v[i].start_time{
-                overlap = true;
-                ov_index = i;
-                ov_r1 = v[i].resource_1;
-                ov_r2 = v[i].resource_2;
-                ov_r3 = v[i].resource_3;
-            } else if event_start < v[i].end_time && event_end >= v[i].end_time{
-                overlap = true;
-                ov_index = i;
-                ov_r1 = v[i].resource_1;
-                ov_r2 = v[i].resource_2;
-                ov_r3 = v[i].resource_3;
-            } else if event_start > v[i].start_time && event_end < v[i].end_time{
-                overlap = true;
-                ov_index = i;
-                ov_r1 = v[i].resource_1;
-                ov_r2 = v[i].resource_2;
-                ov_r3 = v[i].resource_3;
-            } else if event_start < v[i].start_time && event_end > v[i].end_time{
-                overlap = true;
-                ov_index = i;
-                ov_r1 = v[i].resource_1;
-                ov_r2 = v[i].resource_2;
-                ov_r3 = v[i].resource_3;
-            }
-        }
-    }*/
     
     println!("Do you need to use camerea 1? (enter y or n)");
     loop{
