@@ -10,14 +10,75 @@ fn main() {
     days.push("thursday".to_string());
     days.push("friday".to_string());
     days.push("saturday".to_string());
+    let mut user_type: String = String::new();
+    let mut answer: String = String::new();
 
-    add_event(&mut event_list);
+    println!("Enter 1 or 2 depending on what type of user you are.");
+    println!("Enter 1 if you are a view only user.");
+    println!("Enter 2 if you are a user that can make changes.");
+    loop{
+        io::stdin()
+            .read_line(&mut user_type)
+            .expect("Failed to read user type.");
+        if user_type.trim() == "1" || user_type.trim() == "2"{
+            break;
+        } else {
+            println!("Please enter 1 or 2");
+            user_type = String::new();
+        }
+    }
+    loop{
+        if user_type.trim() == "1"{
+            println!("\nEnter 1 to view the schedule");
+            println!("Enter 2 to quit");
+            io::stdin()
+                .read_line(&mut answer)
+                .expect("Failed to read answer.");
+            if answer.trim() == "1"{
+                show_schedule(&mut event_list, &mut days);
+                answer = String::new();
+            } else if answer.trim() == "2"{
+                break;
+            } else {
+                println!("Please enter 1 or 2");
+                answer = String::new();
+            }
+        } else if user_type.trim() == "2"{
+            println!("\nEnter 1 to view the schedule");
+            println!("Enter 2 to advance to the next day");
+            println!("Enter 3 to add an event");
+            println!("Enter 4 to delete an event");
+            println!("Enter 5 to quit");
+            io::stdin()
+                .read_line(&mut answer)
+                .expect("Failed to read answer");
+            if answer.trim() == "1"{
+                show_schedule(&mut event_list, &mut days);
+                answer = String::new();
+            } else if answer.trim() == "2"{
+                advance_day(&mut event_list, &mut days);
+                answer = String::new();
+            } else if answer.trim() == "3"{
+                add_event(&mut event_list);
+                answer = String::new();
+            } else if answer.trim() == "4"{
+                delete_event(&mut event_list);
+                answer = String::new();
+            } else if answer.trim() == "5"{
+                break;
+            } else {
+                println!("Please enter either 1, 2, 3, 4, or 5");
+            }
+        }
+    }
+
+    /*add_event(&mut event_list);
     add_event(&mut event_list);
     delete_event(&mut event_list);
     add_event(&mut event_list);
     show_schedule(&mut event_list, &mut days);
     advance_day(&mut event_list, &mut days);
-    show_schedule(&mut event_list, &mut days);
+    show_schedule(&mut event_list, &mut days);*/
 }
 
 fn advance_day(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
@@ -76,33 +137,35 @@ fn add_event(mut v: &mut Vec<Event>){
 fn delete_event(mut v: &mut Vec<Event>){
     let mut event_name = String::new();
     let mut deleted: bool = false;
-    println!("Here is the list of scheduled events: \n");
-    for i in 0..v.len(){
-        event_log(&mut v[i]);
-    }
-    println!("Enter the name of the event you would like to delete");
-    loop{
-        io::stdin()
-            .read_line(&mut event_name)
-            .expect("Failed to read event name.");
+    if v.len() == 0{
+        println!("There are no events scheduled")
+    } else {
+        println!("Here is the list of scheduled events: \n");
         for i in 0..v.len(){
-            if deleted == false{
-                if event_name.trim() == v[i].name{
-                    v.remove(i);
-                    deleted = true;
+            event_log(&mut v[i]);
+        }
+        println!("Enter the name of the event you would like to delete");
+        loop{
+            io::stdin()
+                .read_line(&mut event_name)
+                .expect("Failed to read event name.");
+            for i in 0..v.len(){
+                if deleted == false{
+                    if event_name.trim() == v[i].name{
+                        v.remove(i);
+                        deleted = true;
+                    }
                 }
             }
-        }
-        if deleted == true{
-            break;
-        }
-        else{
-            println!("The event name you entered was not found.");
-            println!("Please enter a valid event name.");
-            event_name = String::new();
+            if deleted == true{
+                break;
+            } else {
+                println!("The event name you entered was not found.");
+                println!("Please enter a valid event name.");
+                event_name = String::new();
+            }
         }
     }
-    
 }
 
 fn event_log(event : &mut Event){
