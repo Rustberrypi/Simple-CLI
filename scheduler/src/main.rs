@@ -81,7 +81,7 @@ fn main() {
     show_schedule(&mut event_list, &mut days);*/
 }
 
-fn advance_day(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
+fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
     //let mut events_completed: Vec<Event> = Vec::new();
     let mut indecies: Vec<usize> = Vec::new();
     println!("Here are the events successfully completed on {}:\n", days[0]);
@@ -117,7 +117,7 @@ fn advance_day(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
     days.remove(0);
 }
 
-fn show_schedule(mut events: &mut Vec<Event>, mut days: &mut Vec<String>){
+fn show_schedule(events: &mut Vec<Event>, days: &mut Vec<String>){
     for i in 0..days.len(){
         println!("\nHere are the events scheduled for {}:", days[i]);
         for j in 0..events.len(){
@@ -134,7 +134,7 @@ fn add_event(mut v: &mut Vec<Event>){
     overlap(&mut v);
 }
 
-fn delete_event(mut v: &mut Vec<Event>){
+fn delete_event(v: &mut Vec<Event>){
     let mut event_name = String::new();
     let mut deleted: bool = false;
     if v.len() == 0{
@@ -195,6 +195,7 @@ struct Event{
    and wants to use the same resources as that event it will ask the user if they would like to reschedule
    the event they are currently making or the already existing event.
 */
+#[allow(unused_assignments)]
 fn make_event() -> Event {
     let mut event_name = String::new();
     let mut event_day = String::new();
@@ -246,7 +247,7 @@ fn make_event() -> Event {
         io::stdin()
             .read_line(&mut event_start)
             .expect("Failed to read start time.");
-        let mut holder: u32 = event_start.trim().parse().unwrap_or(3000);
+        let holder: u32 = event_start.trim().parse().unwrap_or(3000);
         if holder > 0 && holder < 2401 {
             break;
         } else {
@@ -261,7 +262,7 @@ fn make_event() -> Event {
         io::stdin()
             .read_line(&mut event_end)
             .expect("Failed to read end time.");
-        let mut holder_2: u32 = event_end.trim().parse().unwrap_or(3000);
+        let holder_2: u32 = event_end.trim().parse().unwrap_or(3000);
         if holder_2 > 0 && holder_2 < 2401 {
             break;
         } else {println!("please enter a time between 0 and 2400");}
@@ -331,6 +332,7 @@ fn make_event() -> Event {
     return event;
 }
 
+#[allow(unused_assignments)]
 fn overlap(v: &mut Vec<Event>){
     let mut condit: String = String::new();
     let mut overlap: bool = false;
