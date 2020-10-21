@@ -351,8 +351,10 @@ fn overlap(v: &mut Vec<Event>){
                         break;
                     }
 
-                    if overlap == true && v[i].resource_1 == v[j].resource_1{
+                    if overlap == true && v[i].resource_1 == true && v[j].resource_1 == true{
                         println!("Both {} and {} use camerea 1 at the same time.", v[i].name, v[j].name);
+                        event_log(&mut v[i]);
+                        event_log(&mut v[j]);
                         println!("If you would like to reschedule {} enter 1.", v[i].name);
                         println!("If you would like to reschedule {} enter 2.", v[j].name);
                         loop{
@@ -372,8 +374,10 @@ fn overlap(v: &mut Vec<Event>){
                                 condit = String::new();
                             }
                         }
-                    } else if overlap == true && v[i].resource_2 == v[j].resource_2{
+                    } else if overlap == true && v[i].resource_2 == true && v[j].resource_2 == true{
                         println!("Both {} and {} use camerea 2 at the same time.", v[i].name, v[j].name);
+                        event_log(&mut v[i]);
+                        event_log(&mut v[j]);
                         println!("If you would like to reschedule {} enter 1.", v[i].name);
                         println!("If you would like to reschedule {} enter 2.", v[j].name);
                         loop{
@@ -393,8 +397,10 @@ fn overlap(v: &mut Vec<Event>){
                                 condit = String::new();
                             }
                         }
-                    } else if overlap == true && v[i].resource_3 == v[j].resource_3{
+                    } else if overlap == true && v[i].resource_3 == true && v[j].resource_3 == true{
                         println!("Both {} and {} use the navigation system at the same time.", v[i].name, v[j].name);
+                        event_log(&mut v[i]);
+                        event_log(&mut v[j]);
                         println!("If you would like to reschedule {} enter 1.", v[i].name);
                         println!("If you would like to reschedule {} enter 2.", v[j].name);
                         loop{
