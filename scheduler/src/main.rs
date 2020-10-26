@@ -92,9 +92,18 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
             indecies.push(i);
         }
     }
-    for i in 0..indecies.len(){
-        events.remove(indecies[i]);
+    
+    loop{
+        if indecies.len() == 0{
+            break;
+        } else {
+            events.remove(indecies[indecies.len() - 1]);
+            indecies.remove(indecies.len() - 1);
+        }
     }
+    //for i in 0..indecies.len(){
+      //  events.remove(indecies[i]);
+    //}
     //println!("Here are the events successfully completed on {}:\n", days[0]);
     /*for i in 0..events_completed.len(){
         event_log(&mut events_completed[i]);
