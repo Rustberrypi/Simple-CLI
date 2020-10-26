@@ -71,24 +71,20 @@ fn main() {
             }
         }
     }
-
-    /*add_event(&mut event_list);
-    add_event(&mut event_list);
-    delete_event(&mut event_list);
-    add_event(&mut event_list);
-    show_schedule(&mut event_list, &mut days);
-    advance_day(&mut event_list, &mut days);
-    show_schedule(&mut event_list, &mut days);*/
 }
 
+/* This method will check what the current day is and scan the events Vec to see what events occour on that day.
+   If an event occurs on that day the event log will be printed for that event and it will be removed from the list.
+   The current day will then be changed to the next day in the Vec and the day that was advanced will be appended 
+   to the end of the Vec.
+*/
 fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
-    //let mut events_completed: Vec<Event> = Vec::new();
     let mut indecies: Vec<usize> = Vec::new();
     println!("Here are the events successfully completed on {}:\n", days[0]);
+
     for i in 0..events.len(){
         if events[i].day == days[0]{
             event_log(&mut events[i]);
-            //events.remove(i);
             indecies.push(i);
         }
     }
@@ -101,13 +97,7 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
             indecies.remove(indecies.len() - 1);
         }
     }
-    //for i in 0..indecies.len(){
-      //  events.remove(indecies[i]);
-    //}
-    //println!("Here are the events successfully completed on {}:\n", days[0]);
-    /*for i in 0..events_completed.len(){
-        event_log(&mut events_completed[i]);
-    }*/
+
     if days[0] == "sunday"{
         days.push("sunday".to_string());
     } else if days[0] == "monday"{
@@ -211,11 +201,6 @@ fn make_event() -> Event {
     let mut event_start = String::new();
     let mut event_end = String::new();
     let mut condit = String::new();
-    /*let mut overlap = false;
-    let mut ov_index: usize = 5000;
-    let mut ov_r1: bool = false;
-    let mut ov_r2: bool = false;
-    let mut ov_r3: bool = false;*/
     let mut r1: bool = false;
     let mut r2: bool = false;
     let mut r3: bool = false;
@@ -341,6 +326,10 @@ fn make_event() -> Event {
     return event;
 }
 
+/* This method checks for overlaps when creating an event. If an overlap is detected it will check the resource use
+   for both Events. If both the events require the same resource the user will be asked to reschedule an Event of 
+   their choice. If the Events don't require the same resource the overlap will be allowed.
+*/
 #[allow(unused_assignments)]
 fn overlap(v: &mut Vec<Event>){
     let mut condit: String = String::new();
