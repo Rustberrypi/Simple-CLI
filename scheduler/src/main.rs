@@ -40,6 +40,7 @@ fn main() {
     if existing_schd.trim().to_lowercase() == "yes"{
         
         read_data(&mut open_file(), &mut event_list);
+        println!("{}", event_list.len());
         
         }
         else {
@@ -135,10 +136,13 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
 }
 
 fn show_schedule(events: &mut Vec<Event>, days: &mut Vec<String>){
+    println!("{}", events.len());
+    event_log(&mut events[0]);
+    println!("{}", events[0].day);
     for i in 0..days.len(){
         println!("\nHere are the events scheduled for {}:", days[i]);
         for j in 0..events.len(){
-            if days[i] == events[j].day{
+            if days[i] == events[j].day.to_lowercase(){
                 event_log(&mut events[j]);
             }
         }
@@ -181,7 +185,7 @@ fn open_file() -> String {
 
 //Parse saved date
 #[allow(unused_assignments)]
-fn read_data(data: &mut String, v: &mut Vec<Event>){
+fn read_data(data: &mut String, event_list: &mut Vec<Event>){
     //println!("{}", data);
     let mut name:String = String::new();
     let mut day:String = String::new();
@@ -192,6 +196,7 @@ fn read_data(data: &mut String, v: &mut Vec<Event>){
     let mut resource_3:String = String::new();
     let a: Vec<String> = data.split("\n").map(|s| s.to_string()).collect();
     let alength = a.len();
+    
 
     
     
@@ -223,17 +228,18 @@ fn read_data(data: &mut String, v: &mut Vec<Event>){
         else if x+1%7 ==7{
            resource_3 = (*a[x]).to_string();
            println!("{}", resource_3);
-            recreate_events(name.to_string(), day.to_string(), start_time.to_string(), end_time.to_string(), resource_1.to_string(), resource_2.to_string(), resource_3.to_string(), v)
+            recreate_events(name.to_string(), day.to_string(), start_time.to_string(), end_time.to_string(), resource_1.to_string(), resource_2.to_string(), resource_3.to_string(), event_list)
         }
         else{
 
         }
     }
+    println!("{}", event_list.len());
 
 
 }
 
-fn recreate_events(event_name: String, event_day: String, event_start: String, event_end: String, r1: String, r2: String, r3: String, v: &mut Vec<Event>){
+fn recreate_events(event_name: String, event_day: String, event_start: String, event_end: String, r1: String, r2: String, r3: String, event_list: &mut Vec<Event>){
     println!("{}", event_name);
     println!("{}", event_day);
     println!("{}", event_start);
@@ -273,7 +279,8 @@ fn recreate_events(event_name: String, event_day: String, event_start: String, e
         resource_2: b2,
         resource_3: b3,
     };
-    v.push(event);
+    event_list.push(event);
+    event_log(&mut event_list[0]);
 }
 
 
