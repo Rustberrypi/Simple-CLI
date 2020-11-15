@@ -1,5 +1,6 @@
 use std::io;
 use std::fs::File;
+use std::io::prelude::*;
 use std::io::Read;
 use std::path::Path;
 
@@ -16,6 +17,7 @@ fn main() {
     let mut user_type: String = String::new();
     let mut answer: String = String::new();
     let mut existing_schd: String = String::new();
+    let mut quit: String = String::new();
     
 
     println!("Enter 1 or 2 depending on what type of user you are.");
@@ -34,18 +36,22 @@ fn main() {
     }
     //Open existing file
     println!("Do you want to view an existing schedule? Type yes or no.");
+    loop{
     io::stdin()
             .read_line(&mut existing_schd)
             .expect("Failed to read user type.");
-    if existing_schd.trim().to_lowercase() == "yes"{
+        if existing_schd.trim().to_lowercase() == "yes"{
         
         read_data(&mut open_file(), &mut event_list);
-        println!("{}", event_list.len());
-        
+        break;
         }
-        else {
-        println!("try again");
+        else if existing_schd.trim().to_lowercase() == "no"{
+        break;
+        } else {
+            println!("Try Again");
+            existing_schd = String::new();
         }
+    }
     loop{
         if user_type.trim() == "1"{
             println!("\nEnter 1 to view the schedule");
@@ -84,6 +90,13 @@ fn main() {
                 delete_event(&mut event_list);
                 answer = String::new();
             } else if answer.trim() == "5"{
+                println!("Would you like to save before exiting? (Enter y or n");
+                io::stdin()
+                    .read_line(&mut quit)
+                    .expect("Failed to read user type.");
+                if quit.trim().to_lowercase() == "y"{
+                    save_schedule(&mut event_list);
+                }
                 break;
             } else {
                 println!("Please enter either 1, 2, 3, 4, or 5");
@@ -134,11 +147,57 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
     }
     days.remove(0);
 }
+// struct Event{
+//     name: String, 
+//     day: String,
+//     start_time: u32,
+//     end_time: u32,
+//     resource_1: bool,
+//     resource_2: bool,
+//     resource_3: bool,
+// }
+
+fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
+    let mut file_name:String = String::new();
+    //let mut event_name:String = String::new();
+
+    println!("What would you like to name the file");
+    io::stdin()
+            .read_line(&mut file_name)
+            .expect("Failed to read user type.");
+    file_name = "src/".to_string() + file_name.trim() + ".txt";
+    let mut file = File::create(file_name)?;
+    for i in 0..v.len(){
+        let event_name = v[i].name.to_string();
+        let event_day = v[i].day.to_string();
+        let event_start = v[i].start_time.to_string();
+        let event_end = v[i].end_time.to_string();
+        let mut r1: String = String::new();
+        let mut r2: String = String::new();
+        let mut r3: String = String::new();
+        if v[i].resource_1 == true{
+            r1 = "y".to_string();
+        } else {r1 = "n".to_string();}
+        if v[i].resource_2 == true{
+            r2 = "y".to_string();
+        } else {r2 = "n".to_string();}
+        if v[i].resource_3 == true{
+            r3 = "y".to_string();
+        } else {r3 = "n".to_string();}
+        write!(file, "{}\n", event_name)?;
+        write!(file, "{}\n", event_day)?;
+        write!(file, "{}\n", event_start)?;
+        write!(file, "{}\n", event_end)?;
+        write!(file, "{}\n", r1)?;
+        write!(file, "{}\n", r2)?;
+        write!(file, "{}\n", r3)?;
+
+    }
+    //file.write_all(v[0].day)?;
+    Ok(())
+}
 
 fn show_schedule(events: &mut Vec<Event>, days: &mut Vec<String>){
-    println!("{}", events.len());
-    event_log(&mut events[0]);
-    println!("{}", events[0].day);
     for i in 0..days.len(){
         println!("\nHere are the events scheduled for {}:", days[i]);
         for j in 0..events.len(){
@@ -201,37 +260,35 @@ fn read_data(data: &mut String, event_list: &mut Vec<Event>){
     
     
     for x in 0..alength{
-        if x+1%7 == 1{
+        if ((x+1) % 7) == 1{
            name = (*a[x]).to_string();
            println!("{}", name);
         }
-        else if x+1%7 ==2{
+        else if ((x+1) % 7) ==2{
            day = (*a[x]).to_string();
            println!("{}", day);
         }
-        else if x+1%7 ==3{
+        else if ((x+1) % 7) ==3{
            start_time = (*a[x]).to_string();
            println!("{}", start_time);
         }
-        else if x+1%7 ==4{
+        else if ((x+1) % 7) ==4{
            end_time = (*a[x]).to_string();
            println!("{}", end_time);
         }
-        else if x+1%7 ==5{
+        else if ((x+1) % 7) ==5{
            resource_1 = (*a[x]).to_string();
            println!("{}", resource_1);
         }
-        else if x+1%7 ==6{
+        else if ((x+1) % 7) ==6{
            resource_2 = (*a[x]).to_string();
            println!("{}", resource_2);
         }
-        else if x+1%7 ==7{
+        else if ((x+1) % 7) == 0{
+           println!("{}", ((x+1) % 7)); 
            resource_3 = (*a[x]).to_string();
            println!("{}", resource_3);
-            recreate_events(name.to_string(), day.to_string(), start_time.to_string(), end_time.to_string(), resource_1.to_string(), resource_2.to_string(), resource_3.to_string(), event_list)
-        }
-        else{
-
+           recreate_events(name.to_string(), day.to_string(), start_time.to_string(), end_time.to_string(), resource_1.to_string(), resource_2.to_string(), resource_3.to_string(), event_list)
         }
     }
     println!("{}", event_list.len());
