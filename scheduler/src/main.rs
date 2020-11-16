@@ -90,7 +90,7 @@ fn main() {
                 delete_event(&mut event_list);
                 answer = String::new();
             } else if answer.trim() == "5"{
-                println!("Would you like to save before exiting? (Enter y or n");
+                println!("Would you like to save before exiting? (Enter y or n)");
                 io::stdin()
                     .read_line(&mut quit)
                     .expect("Failed to read user type.");
@@ -147,24 +147,15 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
     }
     days.remove(0);
 }
-// struct Event{
-//     name: String, 
-//     day: String,
-//     start_time: u32,
-//     end_time: u32,
-//     resource_1: bool,
-//     resource_2: bool,
-//     resource_3: bool,
-// }
+
 
 fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
     let mut file_name:String = String::new();
-    //let mut event_name:String = String::new();
 
     println!("What would you like to name the file");
     io::stdin()
             .read_line(&mut file_name)
-            .expect("Failed to read user type.");
+            .expect("Failed to read filr name.");
     file_name = "src/".to_string() + file_name.trim() + ".txt";
     let mut file = File::create(file_name)?;
     for i in 0..v.len(){
@@ -193,7 +184,6 @@ fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
         write!(file, "{}\n", r3)?;
 
     }
-    //file.write_all(v[0].day)?;
     Ok(())
 }
 
@@ -213,6 +203,7 @@ fn add_event(mut v: &mut Vec<Event>){
     v.push(event);
     overlap(&mut v);
 }
+
 //Opens existing schedule
 fn open_file() -> String {
     let mut schedule: String = String::new();
@@ -223,7 +214,7 @@ fn open_file() -> String {
         .read_line(&mut schedule)
         .expect("Failed to read user input");
         
-        schedule = schedule.trim().to_string();
+        schedule = schedule.trim().to_string() + ".txt";
         let source = "./src/".to_string();
         let schpath = source + &schedule;
         let path = Path::new(&schpath);
@@ -262,48 +253,48 @@ fn read_data(data: &mut String, event_list: &mut Vec<Event>){
     for x in 0..alength{
         if ((x+1) % 7) == 1{
            name = (*a[x]).to_string();
-           println!("{}", name);
+           //println!("{}", name);
         }
         else if ((x+1) % 7) ==2{
            day = (*a[x]).to_string();
-           println!("{}", day);
+           //println!("{}", day);
         }
         else if ((x+1) % 7) ==3{
            start_time = (*a[x]).to_string();
-           println!("{}", start_time);
+           //println!("{}", start_time);
         }
         else if ((x+1) % 7) ==4{
            end_time = (*a[x]).to_string();
-           println!("{}", end_time);
+           //println!("{}", end_time);
         }
         else if ((x+1) % 7) ==5{
            resource_1 = (*a[x]).to_string();
-           println!("{}", resource_1);
+           //println!("{}", resource_1);
         }
         else if ((x+1) % 7) ==6{
            resource_2 = (*a[x]).to_string();
-           println!("{}", resource_2);
+           //println!("{}", resource_2);
         }
         else if ((x+1) % 7) == 0{
-           println!("{}", ((x+1) % 7)); 
+           //println!("{}", ((x+1) % 7)); 
            resource_3 = (*a[x]).to_string();
-           println!("{}", resource_3);
+           //println!("{}", resource_3);
            recreate_events(name.to_string(), day.to_string(), start_time.to_string(), end_time.to_string(), resource_1.to_string(), resource_2.to_string(), resource_3.to_string(), event_list)
         }
     }
-    println!("{}", event_list.len());
+    //println!("{}", event_list.len());
 
 
 }
 
 fn recreate_events(event_name: String, event_day: String, event_start: String, event_end: String, r1: String, r2: String, r3: String, event_list: &mut Vec<Event>){
-    println!("{}", event_name);
-    println!("{}", event_day);
-    println!("{}", event_start);
-    println!("{}", event_end);
-    println!("{}", r1);
-    println!("{}", r2);
-    println!("{}", r3);
+    // println!("{}", event_name);
+    // println!("{}", event_day);
+    // println!("{}", event_start);
+    // println!("{}", event_end);
+    // println!("{}", r1);
+    // println!("{}", r2);
+    // println!("{}", r3);
 
 
     let mut b1:bool=false;
@@ -337,7 +328,7 @@ fn recreate_events(event_name: String, event_day: String, event_start: String, e
         resource_3: b3,
     };
     event_list.push(event);
-    event_log(&mut event_list[0]);
+    //event_log(&mut event_list[0]);
 }
 
 
