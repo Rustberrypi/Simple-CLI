@@ -4,6 +4,7 @@ use std::io::prelude::*;
 use std::io::Read;
 use std::path::Path;
 
+#[allow(unused_must_use)]
 fn main() {
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
@@ -148,7 +149,7 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
     days.remove(0);
 }
 
-
+#[allow(unused_assignments)]
 fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
     let mut file_name:String = String::new();
 
@@ -287,6 +288,7 @@ fn read_data(data: &mut String, event_list: &mut Vec<Event>){
 
 }
 
+#[allow(unused_assignments)]
 fn recreate_events(event_name: String, event_day: String, event_start: String, event_end: String, r1: String, r2: String, r3: String, event_list: &mut Vec<Event>){
     // println!("{}", event_name);
     // println!("{}", event_day);
