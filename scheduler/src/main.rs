@@ -3,9 +3,12 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::Read;
 use std::path::Path;
+extern crate rpassword;
+mod login;
 
 #[allow(unused_must_use)]
 fn main() {
+    let user: bool = login::login();
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());
@@ -15,61 +18,44 @@ fn main() {
     days.push("thursday".to_string());
     days.push("friday".to_string());
     days.push("saturday".to_string());
-    let mut user_type: String = String::new();
+    //let mut user_type: String = String::new();
     let mut answer: String = String::new();
     let mut existing_schd: String = String::new();
     let mut quit: String = String::new();
     
 
-    println!("Enter 1 or 2 depending on what type of user you are.");
-    println!("Enter 1 if you are a view only user.");
-    println!("Enter 2 if you are a user that can make changes.");
-    loop{
-        io::stdin()
-            .read_line(&mut user_type)
-            .expect("Failed to read user type.");
-        if user_type.trim() == "1" || user_type.trim() == "2"{
-            break;
-        } else {
-            println!("Please enter 1 or 2");
-            user_type = String::new();
-        }
-    }
+    // println!("Enter 1 or 2 depending on what type of user you are.");
+    // println!("Enter 1 if you are a view only user.");
+    // println!("Enter 2 if you are a user that can make changes.");
+    // loop{
+    //     io::stdin()
+    //         .read_line(&mut user_type)
+    //         .expect("Failed to read user type.");
+    //     if user_type.trim() == "1" || user_type.trim() == "2"{
+    //         break;
+    //     } else {
+    //         println!("Please enter 1 or 2");
+    //         user_type = String::new();
+    //     }
+    // }
     //Open existing file
-    println!("Do you want to view an existing schedule? Type yes or no.");
-    loop{
-    io::stdin()
-            .read_line(&mut existing_schd)
-            .expect("Failed to read user type.");
-        if existing_schd.trim().to_lowercase() == "yes"{
-        
-        read_data(&mut open_file(), &mut event_list);
-        break;
-        }
-        else if existing_schd.trim().to_lowercase() == "no"{
-        break;
-        } else {
-            println!("Try Again");
-            existing_schd = String::new();
-        }
-    }
-    loop{
-        if user_type.trim() == "1"{
-            println!("\nEnter 1 to view the schedule");
-            println!("Enter 2 to quit");
+    if user == true{
+        println!("Do you want to view an existing schedule? Type yes or no.");
+        loop{
             io::stdin()
-                .read_line(&mut answer)
-                .expect("Failed to read answer.");
-            if answer.trim() == "1"{
-                show_schedule(&mut event_list, &mut days);
-                answer = String::new();
-            } else if answer.trim() == "2"{
+                .read_line(&mut existing_schd)
+                .expect("Failed to read user type.");
+            if existing_schd.trim().to_lowercase() == "yes"{
+                read_data(&mut open_file(), &mut event_list);
+                break;
+            } else if existing_schd.trim().to_lowercase() == "no"{
                 break;
             } else {
-                println!("Please enter 1 or 2");
-                answer = String::new();
+                println!("Try Again");
+                existing_schd = String::new();
             }
-        } else if user_type.trim() == "2"{
+        }
+        loop{
             println!("\nEnter 1 to view the schedule");
             println!("Enter 2 to advance to the next day");
             println!("Enter 3 to add an event");
@@ -103,7 +89,9 @@ fn main() {
                 println!("Please enter either 1, 2, 3, 4, or 5");
             }
         }
-    }
+    } else {
+        println!("Only users are allowed to access the scheduler.")
+    }  
 }
 
 /* This method will check what the current day is and scan the events Vec to see what events occour on that day.
@@ -226,6 +214,7 @@ fn open_file() -> String {
     }
     else{
         println!("File does not exist. Try again.");
+        schedule = String::new();
     }
     
 }

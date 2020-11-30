@@ -3,11 +3,11 @@ use std::io::{self, Read};
 use std::fs::File;
 extern crate rpassword;
 
-fn login() -> bool {
+pub fn login() -> bool {
     let mut loops = 0;
     let mut uname = String::new();
     let mut upassd = String::new();
-    let file_creds = "./.nothing.key";
+    let file_creds = "src/.nothing.key";
     let mut raw_creds = String::new();
     let mut returnVal = false;
 
@@ -17,6 +17,7 @@ fn login() -> bool {
     };
 
     let mut f = File::open(file_creds).expect("Unable to read credentials file.");
+    
     
     f.read_to_string(&mut raw_creds);
     let mut data = raw_creds.lines();
@@ -31,18 +32,18 @@ fn login() -> bool {
         println!("Enter username:");
         io::stdin().read_line(&mut uname);
 
-        let uname = uname.trim();
-
-        if uname.eq(&gCreds.uname) {
-           let upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
+        if uname.trim().eq(&gCreds.uname) {
+           upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
            if upassd.eq(&gCreds.passd) {
               loops = 3;
               returnVal = true;
            } else {
               loops = loops + 1;
+              uname = String::new();
+              upassd = String::new();
            }
-        } else if uname.eq(&okCreds.uname) {
-           let upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
+        } else if uname.trim().eq(&okCreds.uname) {
+           upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
            if upassd.eq(&okCreds.passd) {
               loops = 3;
            } else {
@@ -50,6 +51,7 @@ fn login() -> bool {
            }
         } else {
            loops = loops + 1;
+           uname = String::new();
         }
     }
     returnVal

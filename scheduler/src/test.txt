@@ -1,14 +1,21 @@
 Event Test
 Sunday
-0900
+900
 1500
 n
 y
 n
 Event Test2
 Saturday
-0900
+900
 1500
+n
+n
+n
+Second Event
+tuesday
+500
+600
 n
 n
 n
