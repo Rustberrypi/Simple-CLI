@@ -4,7 +4,9 @@ use std::io::prelude::*;
 use std::io::Read;
 use std::path::Path;
 extern crate rpassword;
+extern crate argon2;
 mod login;
+mod user_credentials;
 
 #[allow(unused_must_use)]
 fn main() {
