@@ -4,7 +4,7 @@ use std::boxed::Box;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
-use std::io::{self, BufReader, Read, Write};
+use std::io::{self, BufReader, BufWriter, Read, Write};
 use rand::RngCore;
 use rand::rngs::OsRng;
 
@@ -42,11 +42,11 @@ fn turn_key() -> Result<Vec<UserCred>, &'static str> {
 	let mut reader = BufReader::new(key);
 	let mut contents: Vec<u8> = vec![];
 	reader.read(&mut contents).expect("Unexpected failure reading key file.");
-	let keylib = load_creds(contents);
+	let keylib = parse_key(contents);
 	Ok(keylib)
 }
 
-fn load_creds(inpt: Vec<u8>) -> Vec<UserCred> {
+fn parse_key(inpt: Vec<u8>) -> Vec<UserCred> {
 	let mut users: Vec<UserCred> = vec!();
 	let mut i: usize = 0;		
 	while i < inpt.len() {
@@ -61,6 +61,17 @@ fn load_creds(inpt: Vec<u8>) -> Vec<UserCred> {
 		i += 145;
 	}
 	users
+}
+
+// TODO: Seems unintuitive that adding a user currently requires 2 actions (push to key, update key); refactor?
+fn update_key(update: Vec<UserCred>) -> Result<(), &'static str> {
+	let key = File::open(KEY_FILE).expect("Unable to open key file!");
+	//let mut reader = BufReader::new(key);
+	let mut writer = BufWriter::new(key);
+	for user in update {
+		write!(writer, "{}", user);
+	}
+	Ok(())
 }
 
 impl UserCred {
