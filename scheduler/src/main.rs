@@ -10,7 +10,7 @@ mod user_credentials;
 
 #[allow(unused_must_use)]
 fn main() {
-    let user: bool = login::login();
+    let user: bool = login::login().unwrap();
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());

@@ -1,58 +1,57 @@
 #![allow(unused_imports, dead_code, unused_must_use, unused, unknown_lints, non_camel_case_types, non_snake_case)]
 use std::io::{self, Read};
+use std::any::type_name;
+use std::error::Error;
 use std::fs::File;
+use std::option::Option;
+use crate::user_credentials;
 extern crate rpassword;
+extern crate argon2;
 
-pub fn login() -> bool {
+pub fn login() -> Result<bool, Box<dyn Error, >> {
     let mut loops = 0;
     let mut uname = String::new();
     let mut upassd = String::new();
-    let file_creds = "src/.nothing.key";
+    let file_creds = ".nothing.key";
     let mut raw_creds = String::new();
-    let mut returnVal = false;
+    let mut returnVal: Option<bool> = None;
 
-    struct cred_struct {
-       uname: String, 
-       passd: String
-    };
-
-    let mut f = File::open(file_creds).expect("Unable to read credentials file.");
-    
-    
-    f.read_to_string(&mut raw_creds);
-    let mut data = raw_creds.lines();
-    let gCreds  = {cred_struct { uname: String::from(data.next().unwrap()), passd: String::from(data.next().unwrap()) }};
-    let okCreds = {cred_struct { uname: String::from(data.next().unwrap()), passd: String::from(data.next().unwrap()) }}; 
-
-    println!("Good Creds: {}, {}", gCreds.uname, gCreds.passd);
-    println!("Ok Creds: {}, {}", okCreds.uname, okCreds.passd);
-
+   let mut creds = user_credentials::turn_key().expect("Couldn't open the key!");
+   println!("Creds is {} big.", creds.len());
+    let config = argon2::Config::default();
     while loops < 3 {
-        println!("{}", returnVal);
-        println!("Enter username:");
+       creds = user_credentials::turn_key().expect("Couldn't open the key!");
+       println!("I will now print all available creds.");
+       for c in &creds {
+         println!("Here's a cred: {}", c);
+      }
+       println!("Enter username:");
         io::stdin().read_line(&mut uname);
-
-        if uname.trim().eq(&gCreds.uname) {
-           upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
-           if upassd.eq(&gCreds.passd) {
-              loops = 3;
-              returnVal = true;
-           } else {
-              loops = loops + 1;
-              uname = String::new();
-              upassd = String::new();
-           }
-        } else if uname.trim().eq(&okCreds.uname) {
-           upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
-           if upassd.eq(&okCreds.passd) {
-              loops = 3;
-           } else {
-              loops = loops + 1;
-           }
+        if uname.trim().eq("config") {
+            let user = user_credentials::UserCred::new().expect("NO!");
+            creds.push(user);
+            user_credentials::update_key(creds);
         } else {
-           loops = loops + 1;
-           uname = String::new();
-        }
+         upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
+         for user in &creds {
+            if user.name().eq(&uname) {
+               let hash = argon2::hash_encoded(upassd.as_bytes(), &user.salt()[..], &config).unwrap();
+               if hash.split_at(28).1.as_bytes() == &user.pash()[..] {
+                  returnVal = Some(user.access() == 2);
+                  loops = 3;
+               }
+            }
+         }
+      }
+        loops = loops + 1;
     }
-    returnVal
+    
+    match returnVal {
+       Some(a) => Ok(a),
+       None => Err("Error".into()),
+    }
 }
+
+// fn type_of(_: T) -> &'static str {
+//    type_name::()
+// }

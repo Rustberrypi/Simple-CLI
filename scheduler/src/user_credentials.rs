@@ -1,5 +1,5 @@
 extern crate argon2;
-
+extern crate rpassword;
 use std::boxed::Box;
 use std::error::Error;
 use std::fmt;
@@ -36,17 +36,25 @@ impl fmt::Display for UserCred {
 	}
 }
 
-fn turn_key() -> Result<Vec<UserCred>, &'static str> {
+pub fn turn_key() -> Result<Vec<UserCred>, &'static str> {
 	const ARGON: &str = "$argon2i$v=19$m=4096,t=3,p=1"; // 28 bytes
 	let key = File::open(KEY_FILE).expect("Unable to open key file!");
 	let mut reader = BufReader::new(key);
-	let mut contents: Vec<u8> = vec![];
-	reader.read(&mut contents).expect("Unexpected failure reading key file.");
+	let mut contents: Vec<u8> = Vec::new();
+	// let mut debug: String = String::new();
+	// reader.read_to_string(&mut debug).expect("nawp");
+	// println!("{}", debug);
+	// eader = BufReader::new(File::open(KEY_FILE).expect("Bananas Foster"));
+	reader.read_to_end(&mut contents).expect("Unexpected failure reading key file.");
+	println!("There are now {} elements in 'contents'., and {} elements in the reader's buffer.", contents.len(), reader.buffer().len());
 	let keylib = parse_key(contents);
 	Ok(keylib)
 }
 
 fn parse_key(inpt: Vec<u8>) -> Vec<UserCred> {
+	if inpt.len() < 145 {
+		return Vec::new()
+	}
 	let mut users: Vec<UserCred> = vec!();
 	let mut i: usize = 0;		
 	while i < inpt.len() {
@@ -64,18 +72,19 @@ fn parse_key(inpt: Vec<u8>) -> Vec<UserCred> {
 }
 
 // TODO: Seems unintuitive that adding a user currently requires 2 actions (push to key, update key); refactor?
-fn update_key(update: Vec<UserCred>) -> Result<(), &'static str> {
+pub fn update_key(update: Vec<UserCred>) -> Result<(), &'static str> {
 	let key = File::open(KEY_FILE).expect("Unable to open key file!");
 	//let mut reader = BufReader::new(key);
 	let mut writer = BufWriter::new(key);
 	for user in update {
 		write!(writer, "{}", user);
 	}
+	writer.flush().expect("I'm a dumb idiot!");
 	Ok(())
 }
 
 impl UserCred {
-	fn new() -> Result<UserCred, Box<dyn Error>> {
+	pub fn new() -> Result<UserCred, Box<dyn Error>> {
 		// TODO NEW WOO WOO
 
 		// Standard input stream, Hasher config, temporary variables
@@ -123,6 +132,7 @@ impl UserCred {
 		let mut n: u8 = 0;
 		okay = false;
 		while !okay {
+			okay = true;
 			println!("Set user access level:");
 			println!("    1) Read-Only");
 			println!("    2) Read & Edit");
@@ -134,25 +144,21 @@ impl UserCred {
 			if (n < 1) || (n > 2) { okay = false; }
 			if !okay {
 				println!("Valid access levels are 1 and 2.");
+				tmp1.clear();
 			}
 		}
 		new_user.access = n;
 		tmp1.clear();
 		
 		// Get a password to use; validate by double-checking
+		okay = false;
 		println!("Please choose a password.  Passwords are case-sensitive.");
 		println!("For security, the password you type will not appear on screen;");
 		println!("You will be asked to type it again to confirm.");
 		while !okay {
 			okay = true;
-			print!("Password: ");
-			out.flush()?;
-			inpt.read_line(&mut tmp1)?;
-			tmp1 = String::from(tmp1.trim());
-			print!("Password (again): ");
-			out.flush()?;
-			inpt.read_line(&mut tmp2)?;
-			tmp2 = String::from(tmp2.trim());
+			tmp1 = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
+			tmp2 = rpassword::prompt_password_stdout("Re-enter Password: ").unwrap().to_string();
 			if tmp1 != tmp2 || tmp1.len() > LARGE_BLOCK_SIZE { okay = false; }
 			if !okay {
 				println!("Your first and second entries did not match.  Try again.");
@@ -189,7 +195,7 @@ impl UserCred {
 		Ok(new_user)
 	}
 
-	fn equals(&self, other: &UserCred) -> bool {
+	pub fn equals(&self, other: &UserCred) -> bool {
 		if self.name == other.name &&
 		   self.access == other.access &&
 		   self.salt == other.salt && 
@@ -200,7 +206,7 @@ impl UserCred {
 		}
 	}
 	
-	fn verify(&self, key: Vec<UserCred>) -> Result<bool, &str> {
+	pub fn verify(&self, key: Vec<UserCred>) -> Result<bool, &str> {
 		let mut verf: bool = false;
 		for other in key {
 			if self.equals(&other) {
@@ -212,5 +218,17 @@ impl UserCred {
 			false => Err("Unable to verify user credentials.")
 		}
 	}
-		
+
+	pub fn name(&self) -> String {
+		String::from_utf8(self.name.clone()).unwrap()
+	}
+	pub fn access(&self) -> u8 {
+		self.access
+	}
+	pub fn salt(&self) -> &Vec<u8> {
+		&self.salt
+	}
+	pub fn pash(&self) -> &Vec<u8> {
+		&self.pash
+	}
 }
