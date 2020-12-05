@@ -12,3 +12,4 @@ Cargo.lock
 # For development at least, no need to store files
 # generated as part of the build process
 /scheduler/debug
+/scheduler/target
