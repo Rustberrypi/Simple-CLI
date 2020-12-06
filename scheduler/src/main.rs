@@ -8,9 +8,8 @@ extern crate argon2;
 mod login;
 mod user_credentials;
 
-#[allow(unused_must_use)]
 fn main() {
-    let user: bool = login::login().unwrap();
+    let user: bool = true; //login::login().unwrap();
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());
@@ -20,81 +19,59 @@ fn main() {
     days.push("thursday".to_string());
     days.push("friday".to_string());
     days.push("saturday".to_string());
-    //let mut user_type: String = String::new();
-    let mut answer: String = String::new();
-    let mut existing_schd: String = String::new();
-    let mut quit: String = String::new();
-    
 
-    // println!("Enter 1 or 2 depending on what type of user you are.");
-    // println!("Enter 1 if you are a view only user.");
-    // println!("Enter 2 if you are a user that can make changes.");
-    // loop{
-    //     io::stdin()
-    //         .read_line(&mut user_type)
-    //         .expect("Failed to read user type.");
-    //     if user_type.trim() == "1" || user_type.trim() == "2"{
-    //         break;
-    //     } else {
-    //         println!("Please enter 1 or 2");
-    //         user_type = String::new();
-    //     }
-    // }
-    //Open existing file
     if user == true{
-        println!("Do you want to view an existing schedule? Type yes or no.");
+        use_existing(&mut event_list, &mut days);
         loop{
-            io::stdin()
-                .read_line(&mut existing_schd)
-                .expect("Failed to read user type.");
-            if existing_schd.trim().to_lowercase() == "yes"{
-                read_data(&mut open_file(), &mut event_list);
+            let prompt_again = prompt_user(&mut event_list, &mut days);
+            if !prompt_again {
                 break;
-            } else if existing_schd.trim().to_lowercase() == "no"{
-                break;
-            } else {
-                println!("Try Again");
-                existing_schd = String::new();
-            }
-        }
-        loop{
-            println!("\nEnter 1 to view the schedule");
-            println!("Enter 2 to advance to the next day");
-            println!("Enter 3 to add an event");
-            println!("Enter 4 to delete an event");
-            println!("Enter 5 to quit");
-            io::stdin()
-                .read_line(&mut answer)
-                .expect("Failed to read answer");
-            if answer.trim() == "1"{
-                show_schedule(&mut event_list, &mut days);
-                answer = String::new();
-            } else if answer.trim() == "2"{
-                advance_day(&mut event_list, &mut days);
-                answer = String::new();
-            } else if answer.trim() == "3"{
-                add_event(&mut event_list);
-                answer = String::new();
-            } else if answer.trim() == "4"{
-                delete_event(&mut event_list);
-                answer = String::new();
-            } else if answer.trim() == "5"{
-                println!("Would you like to save before exiting? (Enter y or n)");
-                io::stdin()
-                    .read_line(&mut quit)
-                    .expect("Failed to read user type.");
-                if quit.trim().to_lowercase() == "y"{
-                    save_schedule(&mut event_list);
-                }
-                break;
-            } else {
-                println!("Please enter either 1, 2, 3, 4, or 5");
             }
         }
     } else {
         println!("Only users are allowed to access the scheduler.")
     }  
 }
+
+#[allow(unused_must_use)]
+fn prompt_user(event_list: &mut Vec<Event>, days: &mut Vec<String>) -> bool{
+    let mut quit: String = String ::new();
+    let mut answer: String = String::new();
+    println!("\nEnter 1 to view the schedule");
+    println!("Enter 2 to advance to the next day");
+    println!("Enter 3 to add an event");
+    println!("Enter 4 to delete an event");
+    println!("Enter 5 to quit");
+    io::stdin()
+        .read_line(&mut answer)
+        .expect("Failed to read answer");
+    if answer.trim() == "1"{
+        show_schedule(event_list, days);
+        return true;
+    } else if answer.trim() == "2"{
+        advance_day(event_list, days);
+        return true;
+    } else if answer.trim() == "3"{
+        add_event(event_list);
+        return true;
+    } else if answer.trim() == "4"{
+        delete_event(event_list);
+        return true;
+    } else if answer.trim() == "5"{
+        println!("Would you like to save before exiting? (Enter y or n)");
+        io::stdin()
+            .read_line(&mut quit)
+            .expect("Failed to read user type.");
+        if quit.trim().to_lowercase() == "y"{
+            save_schedule(event_list, days);
+        }
+        return false;
+    } else {
+        println!("Please enter either 1, 2, 3, 4, or 5");
+        return true;
+    }
+}
+
 
 /* This method will check what the current day is and scan the events Vec to see what events occour on that day.
    If an event occurs on that day the event log will be printed for that event and it will be removed from the list.
@@ -139,16 +116,28 @@ fn advance_day(events: &mut Vec<Event>, days: &mut Vec<String>){
     days.remove(0);
 }
 
-#[allow(unused_assignments)]
-fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
-    let mut file_name:String = String::new();
+#[allow(unused_assignments, unused_mut, unused_must_use)]
+fn save_day( days: &mut Vec<String>, file_name: &mut String) -> std::io::Result<()>{
+    let mut file_name_day: String =  "src/".to_string() + file_name.trim() + "_day" + ".txt";
+    let mut file_day = File ::create(file_name_day)?;
+    write!(file_day, "{}", days[0].to_string().trim());
+    Ok(())
+}
+
+#[allow(unused_assignments, unused_must_use)]
+fn save_schedule( v: &mut Vec<Event>, days: &mut Vec<String>) -> std::io::Result<()>{
+    let mut file_name: String = String::new();
+    //let mut file_name_day: String = String::new();
 
     println!("What would you like to name the file");
     io::stdin()
             .read_line(&mut file_name)
-            .expect("Failed to read filr name.");
+            .expect("Failed to read file name.");
+    save_day(days, &mut file_name);
     file_name = "src/".to_string() + file_name.trim() + ".txt";
+    //file_name_day = "src/".to_string() + file_name.trim() + "_day" + ".txt";
     let mut file = File::create(file_name)?;
+    //let mut file_day = File ::create(file_name_day)?;
     for i in 0..v.len(){
         let event_name = v[i].name.to_string();
         let event_day = v[i].day.to_string();
@@ -175,7 +164,27 @@ fn save_schedule( v: &mut Vec<Event>) -> std::io::Result<()>{
         write!(file, "{}\n", r3)?;
 
     }
+    //write!(file_day, "{}", days[0].to_string().trim());
     Ok(())
+}
+
+fn use_existing(events: &mut Vec<Event>, days: &mut Vec<String>){
+    let mut existing_schd: String = String::new();
+    println!("Do you want to view an existing schedule? Type yes or no.");
+    loop{
+        io::stdin()
+            .read_line(&mut existing_schd)
+            .expect("Failed to read user type.");
+        if existing_schd.trim().to_lowercase() == "yes"{
+            read_data(&mut open_file(days), events);
+            break;
+        } else if existing_schd.trim().to_lowercase() == "no"{
+            break;
+        } else {
+            println!("Try Again");
+            existing_schd = String::new();
+        }
+    }
 }
 
 fn show_schedule(events: &mut Vec<Event>, days: &mut Vec<String>){
@@ -196,31 +205,95 @@ fn add_event(mut v: &mut Vec<Event>){
 }
 
 //Opens existing schedule
-fn open_file() -> String {
+fn open_file(days: &mut Vec<String>) -> String {
+    days.clear();
     let mut schedule: String = String::new();
-    let mut data = String::new();
+    let mut data: String = String::new();
+    let mut data2: String = String::new();
     loop{
-    println!("What is the schedule name? Name is case sensitive.");
-    io::stdin()
-        .read_line(&mut schedule)
-        .expect("Failed to read user input");
+        println!("What is the schedule name? Name is case sensitive.");
+        io::stdin()
+            .read_line(&mut schedule)
+            .expect("Failed to read user input");
         
-        schedule = schedule.trim().to_string() + ".txt";
+        schedule = schedule.trim().to_string();
+        let txt = ".txt".to_string();
         let source = "./src/".to_string();
-        let schpath = source + &schedule;
+        let source2 = "./src/".to_string();
+        let schpath = source + &schedule + &txt;
         let path = Path::new(&schpath);
-    if  path.is_file(){
-    let mut f = File::open(schpath).expect("Unable to open file");
-    f.read_to_string(&mut data).expect("Unable to read string");
-    break;
+        let day = "_day".to_string();
+        let sch_day_path = source2 + &schedule + &day + &txt;
+        let path_day = Path::new(&sch_day_path);
+        if  path.is_file() && path_day.is_file(){
+            let mut f = File::open(schpath).expect("Unable to open file");
+            let mut f2 = File::open(sch_day_path).expect("Unable to open file.");
+            f.read_to_string(&mut data).expect("Unable to read string");
+            f2.read_to_string(&mut data2).expect("Unable to read string");
+            if data2.trim() == "sunday".to_lowercase(){
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+            } else if data2.trim() == "monday"{
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+            } else if data2.trim() == "tuesday"{
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+            } else if data2.trim() == "wednesday"{
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+            } else if data2.trim() =="thursday"{
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+            } else if data2.trim() == "friday"{
+                days.push("friday".to_string());
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+            } else if data2.trim() == "saturday"{
+                days.push("saturday".to_string());
+                days.push("sunday".to_string());
+                days.push("monday".to_string());
+                days.push("tuesday".to_string());
+                days.push("wednesday".to_string());
+                days.push("thursday".to_string());
+                days.push("friday".to_string());
+            }
+            break;
+        } else {
+            println!("File does not exist. Try again.");
+            schedule = String::new();
+        }
     }
-    else{
-        println!("File does not exist. Try again.");
-        schedule = String::new();
-    }
-    
-}
-        return data;
+    return data;
 }
 
 //Creates save state
