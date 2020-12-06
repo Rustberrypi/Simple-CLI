@@ -9,7 +9,7 @@ mod login;
 mod user_credentials;
 
 fn main() {
-    let user: bool = true; //login::login().unwrap();
+    let user: bool = login::login().unwrap();
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());
