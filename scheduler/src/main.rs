@@ -10,7 +10,7 @@ mod user_credentials;
 
 #[allow(unused_must_use)]
 fn main() {
-    let user: bool = login::login().unwrap();
+    let user: bool = login::login().expect("Login failure.  Have a nice day.");
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());
@@ -455,7 +455,7 @@ fn make_event() -> Event {
     }
     let event_end: u32 = event_end.trim().parse().unwrap();
     
-    println!("Do you need to use camerea 1? (enter y or n)");
+    println!("Do you need to use camera 1? (enter y or n)");
     loop{
         io::stdin().read_line(&mut condit).expect("failed to read answer");
         if condit.trim().to_lowercase() == "y"{
@@ -472,7 +472,7 @@ fn make_event() -> Event {
         }    
     }
 
-    println!("Do you need to use camerea 2? (enter y or n)");
+    println!("Do you need to use camera 2? (enter y or n)");
     loop{
         io::stdin().read_line(&mut condit).expect("failed to read answer");
         if condit.trim().to_lowercase() == "y"{
@@ -544,7 +544,7 @@ fn overlap(v: &mut Vec<Event>){
                     }
 
                     if overlap == true && v[i].resource_1 == true && v[j].resource_1 == true{
-                        println!("Both {} and {} use camerea 1 at the same time.", v[i].name, v[j].name);
+                        println!("Both {} and {} use camera 1 at the same time.", v[i].name, v[j].name);
                         event_log(&mut v[i]);
                         event_log(&mut v[j]);
                         println!("If you would like to reschedule {} enter 1.", v[i].name);
@@ -567,7 +567,7 @@ fn overlap(v: &mut Vec<Event>){
                             }
                         }
                     } else if overlap == true && v[i].resource_2 == true && v[j].resource_2 == true{
-                        println!("Both {} and {} use camerea 2 at the same time.", v[i].name, v[j].name);
+                        println!("Both {} and {} use camera 2 at the same time.", v[i].name, v[j].name);
                         event_log(&mut v[i]);
                         event_log(&mut v[j]);
                         println!("If you would like to reschedule {} enter 1.", v[i].name);

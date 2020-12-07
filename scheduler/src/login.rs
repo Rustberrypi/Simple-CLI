@@ -12,19 +12,19 @@ pub fn login() -> Result<bool, Box<dyn Error, >> {
     let mut loops = 0;
     let mut uname = String::new();
     let mut upassd = String::new();
-    let file_creds = ".nothing.key";
     let mut raw_creds = String::new();
     let mut returnVal: Option<bool> = None;
 
-   let mut creds = user_credentials::turn_key().expect("Couldn't open the key!");
-   println!("Creds is {} big.", creds.len());
+   // let mut creds = user_credentials::turn_key().expect("Couldn't open the key!");
     let config = argon2::Config::default();
     while loops < 3 {
-       creds = user_credentials::turn_key().expect("Couldn't open the key!");
-       println!("I will now print all available creds.");
+       let mut creds = user_credentials::turn_key().expect("Couldn't open the key!");
+       println!("Creds contains {} element(s).", creds.len());
+       println!("Here, let me print them for you.");
        for c in &creds {
          println!("Here's a cred: {}", c);
       }
+
        println!("Enter username:");
         io::stdin().read_line(&mut uname);
         if uname.trim().eq("config") {
@@ -33,17 +33,18 @@ pub fn login() -> Result<bool, Box<dyn Error, >> {
             user_credentials::update_key(creds);
         } else {
          upassd = rpassword::prompt_password_stdout("Password: ").unwrap().to_string();
-         for user in &creds {
-            if user.name().eq(&uname) {
-               let hash = argon2::hash_encoded(upassd.as_bytes(), &user.salt()[..], &config).unwrap();
-               if hash.split_at(28).1.as_bytes() == &user.pash()[..] {
-                  returnVal = Some(user.access() == 2);
-                  loops = 3;
-               }
-            }
-         }
+         // for user in &creds {
+         //    if user.name().eq(&uname) {
+         //       let hash = argon2::hash_encoded(upassd.as_bytes(), &user.salt()[..], &config).unwrap();
+         //       if hash.split_at(28).1.as_bytes() == &user.pash()[..] {
+         //          returnVal = Some(user.access() == 2);
+         //          loops = 3;
+         //       }
+         //    }
+         // }
+         returnVal = user_credentials::verify_user(creds, &uname, &upassd).ok();
       }
-        loops = loops + 1;
+      loops = loops + 1;
     }
     
     match returnVal {

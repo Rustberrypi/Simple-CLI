@@ -3,7 +3,7 @@ extern crate rpassword;
 use std::boxed::Box;
 use std::error::Error;
 use std::fmt;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use rand::RngCore;
 use rand::rngs::OsRng;
@@ -11,6 +11,7 @@ use rand::rngs::OsRng;
 const KEY_FILE: &str = "./.nothing.key";
 const LARGE_BLOCK_SIZE: usize = 64;
 const SMALL_BLOCK_SIZE: usize=16;
+const JUNK_BYTE: u8 = 33u8;
 
 pub struct UserCred {
 	name: Vec<u8>,
@@ -38,15 +39,14 @@ impl fmt::Display for UserCred {
 
 pub fn turn_key() -> Result<Vec<UserCred>, &'static str> {
 	const ARGON: &str = "$argon2i$v=19$m=4096,t=3,p=1"; // 28 bytes
-	let key = File::open(KEY_FILE).expect("Unable to open key file!");
-	let mut reader = BufReader::new(key);
+	let mut key = OpenOptions::new()
+					.read(true)
+					.write(true)
+					.create(true)
+					.open(KEY_FILE)
+					.expect("Big fat file error.");
 	let mut contents: Vec<u8> = Vec::new();
-	// let mut debug: String = String::new();
-	// reader.read_to_string(&mut debug).expect("nawp");
-	// println!("{}", debug);
-	// eader = BufReader::new(File::open(KEY_FILE).expect("Bananas Foster"));
-	reader.read_to_end(&mut contents).expect("Unexpected failure reading key file.");
-	println!("There are now {} elements in 'contents'., and {} elements in the reader's buffer.", contents.len(), reader.buffer().len());
+	key.read_to_end(&mut contents).expect("Bad key read!?");
 	let keylib = parse_key(contents);
 	Ok(keylib)
 }
@@ -73,14 +73,64 @@ fn parse_key(inpt: Vec<u8>) -> Vec<UserCred> {
 
 // TODO: Seems unintuitive that adding a user currently requires 2 actions (push to key, update key); refactor?
 pub fn update_key(update: Vec<UserCred>) -> Result<(), &'static str> {
-	let key = File::open(KEY_FILE).expect("Unable to open key file!");
+	let mut key = OpenOptions::new()
+				.read(true)
+				.append(true)
+				// .create_new(true)
+				.open(KEY_FILE)
+				.expect("Unable to open key file.");
+	//File::open(KEY_FILE).expect("Unable to open key file!");
 	//let mut reader = BufReader::new(key);
-	let mut writer = BufWriter::new(key);
-	for user in update {
-		write!(writer, "{}", user);
+	// let mut writer = BufWriter::new(key);
+	let mut data: Vec<u8> = Vec::new();
+	for mut user in update {
+		 println!("I am writing {}", user);
+		data.append(&mut user.name);
+		data.push(user.access.clone());
+		data.append(&mut user.salt);
+		data.append(&mut user.pash);
 	}
-	writer.flush().expect("I'm a dumb idiot!");
+	//println!("{}", String::from_utf8(data).expect("..."));
+	// writer.flush().expect("Unexpected failure writing to file.");
+	key.write_all(&data[..]).expect("Unexpected failure writing key file.");
 	Ok(())
+}
+
+pub fn verify_user(key: Vec<UserCred>, name: &str, password: &str) -> Result<bool, &'static str> {
+	let mut verified: bool = false;
+	let mut writer: u8 = 0;
+	let name_bytes: Vec<u8> = name.as_bytes().to_vec();
+	let pass_bytes: Vec<u8> = password.as_bytes().to_vec();
+	println!("Attempting to verify user credentials ({}, {})...", String::from_utf8_lossy(&name_bytes), String::from_utf8_lossy(&pass_bytes));
+	for user in key {
+		if user.name == name_bytes {
+			// let mut new_pash: Vec<u8> = Vec::with_capacity(LARGE_BLOCK_SIZE);
+			let config = argon2::Config::default();
+			let hash = argon2::hash_encoded(&pass_bytes, &user.salt, &config).expect("Error creating password hash.");
+			let new_pash = pack_vector(hash.split_at(28).1.as_bytes().to_vec(), LARGE_BLOCK_SIZE);
+			if user.pash == new_pash {
+				verified = true;
+				writer = user.access;
+				println!("User credentials verified!");
+				break;
+			}
+		}
+	}
+	match verified {
+		true => Ok(writer == 2),
+		false => Err("Unable to verify user credentials."),
+	}
+}
+
+fn pack_vector(val: Vec<u8>, cap: usize) -> Vec<u8> {
+	let mut ret: Vec<u8> = Vec::with_capacity(cap);
+	for byte in val {
+		ret.push(byte);
+	}
+	while ret.len() < ret.capacity() {
+		ret.push(JUNK_BYTE);
+	}
+	ret
 }
 
 impl UserCred {
@@ -94,7 +144,7 @@ impl UserCred {
 		let mut tmp1 = String::new();
 		let mut tmp2 = String::new();
 		let mut okay: bool = false;
-		let mut new_user: UserCred = UserCred{
+		let mut new_user: UserCred = UserCred {
 			name: Vec::with_capacity(LARGE_BLOCK_SIZE),
 			access: 0,
 			salt: Vec::with_capacity(SMALL_BLOCK_SIZE),
@@ -123,7 +173,7 @@ impl UserCred {
 			new_user.name.push(*c);
 		}
 		while new_user.name.len() < new_user.name.capacity() {
-			new_user.name.push(9u8);
+			new_user.name.push(JUNK_BYTE);
 		}
 		okay = false;
 		tmp1.clear();
@@ -181,17 +231,20 @@ impl UserCred {
 			new_user.salt.push(*b);
 		}
 		while new_user.salt.len() < new_user.salt.capacity() {
-			new_user.salt.push(9u8);
+			new_user.salt.push(JUNK_BYTE);
 		}
 		
 		// Hash the salted password string using the Argon2 algorithm
 		let hash = argon2::hash_encoded(tmp1.as_bytes(), &peanuts, &config)?;
+		println!("UserCred::new() has calculated the following hash:\n{}", hash);
 		for b in hash.split_at(28).1.as_bytes() { // 28 is the beginning of the actual hash value
 			new_user.pash.push(*b);
 		}
 		while new_user.pash.len() < new_user.pash.capacity() {
-			new_user.pash.push(9u8);
+			new_user.pash.push(JUNK_BYTE);
 		}
+		// if new_user.verify() - Before saving, I want to make sure the user doesn't already exist.  Probably going to need to add key to new() parameters, or just fucking write a create method like you should have a week ago you dumb idiot.
+		println!("UserCred::new() is creating:\n{}", new_user);
 		Ok(new_user)
 	}
 
