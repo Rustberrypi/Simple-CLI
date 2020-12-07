@@ -9,7 +9,7 @@ mod login;
 mod user_credentials;
 
 fn main() {
-    let user: bool = login::login().expect("Login failure.  Have a nice day.");
+    let user: bool = login::login().expect("Login failure");
     let mut event_list: Vec<Event> = Vec::new();
     let mut days: Vec<String> =Vec::new();
     days.push("sunday".to_string());
