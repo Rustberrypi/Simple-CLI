@@ -18,7 +18,7 @@ const JUNK_BYTE: u8 = 33u8;
 pub struct UserCred {
 	name: Vec<u8>,
 	access: u8,
-	salt: Vec<u8>,
+	//salt: Vec<u8>,
 	pash: Vec<u8>,
 }
 
@@ -37,10 +37,10 @@ pub enum AccessLevel {
 
 impl fmt::Display for UserCred {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		write!(f, "{}{}{}{}",
+		write!(f, "{}{}{}",
 				String::from_utf8_lossy(&self.name),
 				self.access.to_string(),
-				String::from_utf8_lossy(&self.salt),
+				//String::from_utf8_lossy(&self.salt),
 				String::from_utf8_lossy(&self.pash),
 			)
 	}
@@ -50,7 +50,7 @@ impl PartialEq for UserCred {
 	fn eq(&self, other: &Self) -> bool {
 		self.name.eq(&other.name) &&
 		self.access.eq(&other.access) &&
-		self.salt.eq(&other.salt) && 
+		//self.salt.eq(&other.salt) && 
 		self.pash.eq(&other.pash)
 	}
 }
@@ -190,7 +190,7 @@ impl UserCred {
 		// Hash the salted password string using the Argon2 algorithm
 		// let hash = argon2::hash_encoded(tmp1.as_bytes(), &peanuts, &config)?;
 		let hash = argon2::hash_encoded(tmp1.as_bytes(), &new_salt, &config)?;
-		println!("UserCred::new() has calculated the following hash:\n{}", hash);
+		// println!("UserCred::new() has calculated the following hash:\n{}", hash);
 		// for b in hash.split_at(28).1.as_bytes() { // 28 is the beginning of the actual hash value
 		// 	new_user.pash.push(*b);
 		// }
@@ -202,7 +202,7 @@ impl UserCred {
 		new_user = UserCred {
 			name: new_name,
 			access: new_access,
-			salt: new_salt,
+			//salt: new_salt,
 			pash: new_pash,
 		};
 		Ok(new_user)
@@ -221,7 +221,7 @@ impl UserCred {
 		let new_user = UserCred {
 			name: pack_vector(nvec, LARGE_BLOCK_SIZE),
 			access: a,
-			salt: peanuts.to_vec(),
+			//salt: peanuts.to_vec(),
 			pash: pack_vector(hash.split_at(28).1.as_bytes().to_vec(), LARGE_BLOCK_SIZE),
 		};
 		Ok(new_user)
@@ -246,9 +246,9 @@ impl UserCred {
 	pub fn access(&self) -> u8 {
 		self.access
 	}
-	pub fn salt(&self) -> &Vec<u8> {
-		&self.salt
-	}
+	// pub fn salt(&self) -> &Vec<u8> {
+	// 	&self.salt
+	// }
 	pub fn pash(&self) -> &Vec<u8> {
 		&self.pash
 	}
@@ -272,6 +272,7 @@ impl CredKey {
 					.open(&self.file_path)
 					.expect("Error reading specified key file.");
 		f.read_to_end(&mut self.raw).expect("Error reading key file.");
+		// println!("{}", String::from_utf8_lossy(&self.raw));
 		// match self.raw.len() > 0 {
 		// 	true => Ok(()),
 		// 	false => Err("No entries found in key file!".into()),
@@ -285,19 +286,23 @@ impl CredKey {
 			// let mut users: Vec<UserCred> = vec!();
 			let mut i: usize = 0;		
 			while i < self.raw.len() {
+				// println!("Starting from {}...", i);
 				// TODO: Find a way to not use magic numbers
 				let user: UserCred = UserCred {
 					// name: self.raw[0..64].to_vec(),
-					name: self.raw[0..LARGE_BLOCK_SIZE].to_vec(),
+					name: self.raw[i..i + LARGE_BLOCK_SIZE].to_vec(),
 					// access: self.raw[64],
-					access: self.raw[LARGE_BLOCK_SIZE],
+					access: self.raw[i + LARGE_BLOCK_SIZE],
 					// salt: self.raw[65..81].to_vec(),
-					salt: self.raw[LARGE_BLOCK_SIZE+1..LARGE_BLOCK_SIZE+1+SMALL_BLOCK_SIZE].to_vec(),
+					//salt: self.raw[LARGE_BLOCK_SIZE+1..LARGE_BLOCK_SIZE+1+SMALL_BLOCK_SIZE].to_vec(),
 					// pash: self.raw[81..145].to_vec(),
-					pash: self.raw[(LARGE_BLOCK_SIZE)+1+SMALL_BLOCK_SIZE..(2*LARGE_BLOCK_SIZE)+1+SMALL_BLOCK_SIZE].to_vec(),
+					pash: self.raw[(i + LARGE_BLOCK_SIZE)+1..i + (2*LARGE_BLOCK_SIZE)+1].to_vec(),
 				};
+				let newname: Vec<u8> = self.raw[i..i+LARGE_BLOCK_SIZE].to_vec();
+				// println!("Parsed user {}", String::from_utf8_lossy(&newname));
+				// println!("{}", &user);
 				self.users.push(user);
-				i += (3*LARGE_BLOCK_SIZE)+1;
+				i += (2*LARGE_BLOCK_SIZE)+1;
 			}
 		}
 		if self.users.len() < 1 {
@@ -317,7 +322,7 @@ impl CredKey {
 		for u in 0..self.users.len() {
 			data.append(&mut self.users[u].name.clone());
 			data.push(self.users[u].access.clone());
-			data.append(&mut self.users[u].salt.clone());
+			//data.append(&mut self.users[u].salt.clone());
 			data.append(&mut self.users[u].pash.clone());
 		}
 		let mut f = OpenOptions::new()
@@ -361,20 +366,22 @@ impl CredKey {
 		let verified: &UserCred;
 		let name_bytes = pack_vector(name.as_bytes().to_vec(), LARGE_BLOCK_SIZE);
 		let pass_bytes = password.as_bytes();
-		println!("Attempting to verify user credentials ({}, {})...", String::from_utf8_lossy(&name_bytes), String::from_utf8_lossy(&pass_bytes));
+		// println!("Attempting to verify user credentials ({}, {})...", String::from_utf8_lossy(&name_bytes), String::from_utf8_lossy(&pass_bytes));
 		for u in &self.users {
-			println!("Comparing against user {}~~~", u.name());
+			// rintln!("Comparing against user {}~~~", u.name());
 			if u.name.eq(&name_bytes) {
-				println!("YES THEY ARE THE SAMEULAR");
+				// println!("YES THEY ARE THE SAMEULAR");
+				// println!("{}", String::from_utf8_lossy(&u.pash).trim_end_matches("!").to_string());
 				let arg_hash: String = String::from(ARGON) + &String::from_utf8_lossy(&u.pash).trim_end_matches("!").to_string();
+				// println!("{}", arg_hash);
 				//arg_hash.append(&mut u.pash.clone());
-				if argon2::verify_encoded(&arg_hash, pass_bytes).expect("WHOAH hey there, Argon not happy!") {
+				if argon2::verify_encoded(&arg_hash, pass_bytes).expect("Error in Argon2 password verification") {
 					verified = u;
-					println!("Yeah, that's a user, dingus.");
+					println!("User credentials verified.");
 					return Some(verified)
 				}
 			} else {
-				println!("NO HE NOT A SAME FROM {}", String::from_utf8_lossy(&u.name));
+				// println!("NO HE NOT A SAME FROM {}", String::from_utf8_lossy(&u.name));
 			}
 		}
 		None

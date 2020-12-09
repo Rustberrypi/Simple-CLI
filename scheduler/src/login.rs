@@ -28,11 +28,11 @@ pub fn login() -> Result<bool, Box<dyn Error>> {
     let config = argon2::Config::default();
     while loops < 3 {
         let mut creds = user_credentials::turn_key().expect("Couldn't open the key!");
-        println!("Creds contains {} element(s).", creds.users().len());
-        println!("Here, let me print them for you.");
-        for c in creds.users() {
-            println!("Here's a cred: {}", c);
-        }
+        // println!("Creds contains {} element(s).", creds.users().len());
+        // println!("Here, let me print them for you.");
+        // for c in creds.users() {
+        //     println!("Here's a cred: {}", c);
+        // }
 
         println!("Enter username:");
         io::stdin().read_line(&mut uname);
